@@ -1,0 +1,17 @@
+# macOS system files
+.DS_Store
+
+# IDE/editor folders
+.vscode/
+.idea/
+
+# PHP related
+vendor/
+*.log
+.env
+
+# Archives and backups
+*.zip
+*.tar.gz
+*.bak
+*.tmp
