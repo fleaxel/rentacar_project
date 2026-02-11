@@ -1,102 +1,82 @@
-
-
-<?php
-session_start();
-require_once 'includes/db_connect.php';
-
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: index.php");
-    exit;
-}
-
-// Fetch cars not currently rented (available for removal)
-$availableCars = $pdo->query("
-    SELECT * FROM cars 
-    WHERE id NOT IN (SELECT car_id FROM rentals WHERE return_date IS NULL)
-")->fetchAll();
-
-// Fetch rented cars with user info
-$rentedCars = $pdo->query("
-    SELECT cars.*, users.username FROM cars
-    JOIN rentals ON cars.id = rentals.car_id
-    JOIN users ON rentals.user_id = users.id
-    WHERE rentals.return_date IS NULL
-")->fetchAll();
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin Panel</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script src="js/script.js" defer></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #111;
+            color: #fff;
+        }
+        header {
+            background-color: #1f1f1f;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header img {
+            height: 40px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .actions {
+            display: flex;
+            gap: 15px;
+        }
+        .actions a {
+            text-decoration: none;
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+        .actions a:hover {
+            background-color: #555;
+        }
+        main {
+            padding: 40px;
+        }
+        main h2 {
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .section {
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .section p {
+            margin: 0;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-    <div class="dashboard">
-        <h2>Admin Panel</h2>
-
-        <section>
-            <h3>Available Cars</h3>
-            <table class="car-table">
-                <thead>
-                    <tr><th>Model</th><th>Action</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($availableCars as $car): ?>
-                        <tr class="car-row" data-id="<?= $car['id'] ?>">
-                            <td><?= $car['brand'] . " " . $car['model'] ?></td>
-                            <td>
-                                <form method="POST" action="remove_car.php">
-                                    <input type="hidden" name="car_id" value="<?= $car['id'] ?>">
-                                    <button type="submit">Remove</button>
-                                </form>
-                            </td>
-                        </tr>
-                        <tr class="details" style="display:none">
-                            <td colspan="2"><?= $car['notes'] ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </section>
-
-        <section>
-            <h3>Currently Rented Cars</h3>
-            <table class="car-table">
-                <thead>
-                    <tr><th>Model</th><th>Rented By</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($rentedCars as $car): ?>
-                        <tr class="car-row" data-id="<?= $car['id'] ?>">
-                            <td><?= $car['brand'] . " " . $car['model'] ?></td>
-                            <td><?= htmlspecialchars($car['username']) ?></td>
-                        </tr>
-                        <tr class="details" style="display:none">
-                            <td colspan="2"><?= $car['notes'] ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </section>
-
-        <section>
-            <h3>Add a Car</h3>
-            <form method="POST" action="add_car.php" enctype="multipart/form-data">
-                <input type="text" name="manufacturer" placeholder="Manufacturer" required>
-                <input type="text" name="brand" placeholder="Brand" required>
-                <input type="text" name="model" placeholder="Model" required>
-                <input type="text" name="registration_plate" placeholder="Registration Plate" required>
-                <input type="text" name="type" placeholder="Type" required>
-                <input type="text" name="fuel_type" placeholder="Fuel Type" required>
-                <input type="text" name="transmission" placeholder="Transmission" required>
-                <input type="number" name="mileage" placeholder="Mileage" required>
-                <textarea name="notes" placeholder="Notes"></textarea>
-                <input type="file" name="image" accept="image/*" required>
-                <button type="submit">Add Car</button>
-            </form>
-        </section>
-    </div>
+    <header>
+        <img src="images/image.png" alt="Logo">
+        <h1>Admin Dashboard</h1>
+        <div class="actions">
+            <a href="add_car.php">Add Car</a>
+            <a href="remove_car.php">Remove Car</a>
+            <a href="release_car.php">Release Car</a>
+            <a href="index.php">Logout</a>
+        </div>
+    </header>
+    <main>
+        <h2>Welcome, Admin</h2>
+        <div class="section">
+            <p>You can manage cars, view active rentals, and release cars here. Use the buttons above to navigate.</p>
+        </div>
+    </main>
 </body>
 </html>
