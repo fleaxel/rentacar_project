@@ -1,12 +1,19 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const carRows = document.querySelectorAll('.car-row');
+// File: js/script.js
 
-    carRows.forEach(row => {
-        row.addEventListener('click', () => {
-            const nextRow = row.nextElementSibling;
-            if (nextRow && nextRow.classList.contains('details')) {
-                nextRow.style.display = nextRow.style.display === 'none' ? 'table-row' : 'none';
-            }
-        });
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Script loaded. Ready to enhance UI interactions.");
+
+  // Example: Smooth scroll for nav links
+  document.querySelectorAll("nav a").forEach(link => {
+    link.addEventListener("click", (e) => {
+      const target = e.target.getAttribute("href");
+      if (target.startsWith("#")) {
+        e.preventDefault();
+        document.querySelector(target).scrollIntoView({ behavior: "smooth" });
+      }
     });
+  });
+
+  // Optional: Add dark mode toggle (future)
+  // const toggleBtn = document.getElementById("dark-mode-toggle");
 });
