@@ -9,6 +9,7 @@ A basic Rent-A-Car web application built using **PHP**, **MySQL**, **HTML**, **C
 * User/Admin login
 * Car rental and release system
 * Admin can add/remove cars
+* Admin dashboard: car list and rental history
 * Car rental history tracking
 * Dark mode interface
 * Responsive layout
@@ -80,7 +81,7 @@ http://localhost/rentacar/index.php
 ```
 rentacar/
 ├── css/              # Styling (dark mode)
-├── js/               # Row toggle logic
+├── js/               # Row toggle logic and enhancements
 ├── images/           # Logo (and future car images)
 ├── includes/         # DB connection
 ├── database/         # init_rentacar.sql
@@ -90,7 +91,9 @@ rentacar/
 ├── rent_car.php      # Rent action
 ├── release_car.php   # Release action
 ├── add_car.php       # Admin: add vehicle
-└── remove_car.php    # Admin: delete vehicle
+├── remove_car.php    # Admin: delete vehicle
+├── admin_cars.php    # Admin: view all cars
+└── admin_rentals.php # Admin: view rental records
 ```
 
 ---
