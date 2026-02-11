@@ -1,12 +1,12 @@
 <?php
+// File: includes/db_connect.php
 $host = 'localhost';
-$db = 'rentacar';
-$user = 'root';         // default for XAMPP
-$pass = '';             // default is empty for XAMPP
+$db   = 'rentacar';
+$user = 'admin';
+$pass = 'user1';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -15,7 +15,7 @@ $options = [
 
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (\PDOException $e) {
+} catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
 }
 ?>
