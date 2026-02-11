@@ -1,116 +1,74 @@
 <?php
+// File: user.php
 session_start();
 require_once 'includes/db_connect.php';
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND password = ?");
+    $stmt->execute([$username, $password]);
+    $user = $stmt->fetch();
+
+    if ($user) {
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['role'] = $user['role'];
+        header("Location: user.php");
+        exit();
+    } else {
+        $error = "Invalid credentials.";
+    }
+}
+
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: index.php");
-    exit;
+    exit();
 }
 
-$user_id = $_SESSION['user_id'];
-$username = $_SESSION['username'];
-
-// Fetch cars from DB
-function fetchCars($pdo, $query, $params = []) {
-    $stmt = $pdo->prepare($query);
-    $stmt->execute($params);
-    return $stmt->fetchAll();
-}
-
-// Cars available for rent
-$availableCars = fetchCars($pdo, "SELECT * FROM cars WHERE id NOT IN (SELECT car_id FROM rentals WHERE return_date IS NULL)");
-
-// Cars currently rented by user
-$currentRentals = fetchCars($pdo, "SELECT cars.* FROM cars 
-    JOIN rentals ON cars.id = rentals.car_id 
-    WHERE rentals.user_id = ? AND rentals.return_date IS NULL", [$user_id]);
-
-// Rental history
-$pastRentals = fetchCars($pdo, "SELECT cars.* FROM cars 
-    JOIN rentals ON cars.id = rentals.car_id 
-    WHERE rentals.user_id = ? AND rentals.return_date IS NOT NULL", [$user_id]);
+$cars = $pdo->query("SELECT * FROM cars WHERE available = 1")->fetchAll();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Welcome <?= htmlspecialchars($username) ?></title>
-    <link rel="stylesheet" href="css/style.css">
-    <script src="js/script.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Panel - Rent a Car</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="dashboard">
-        <h2>Welcome, <?= htmlspecialchars($username) ?></h2>
+  <header>
+    <img src="images/image.png" alt="Logo" class="logo">
+    <h1>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h1>
+    <nav>
+      <a href="rent_car.php">Rent Car</a>
+      <a href="release_car.php">Release Car</a>
+      <a href="index.php">Logout</a>
+    </nav>
+  </header>
 
-        <section>
-            <h3>Available Cars</h3>
-            <table class="car-table">
-                <thead>
-                    <tr><th>Model</th><th>Action</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($availableCars as $car): ?>
-                        <tr class="car-row" data-id="<?= $car['id'] ?>">
-                            <td><?= $car['brand'] . " " . $car['model'] ?></td>
-                            <td>
-                                <form method="POST" action="rent_car.php">
-                                    <input type="hidden" name="car_id" value="<?= $car['id'] ?>">
-                                    <button type="submit">Rent</button>
-                                </form>
-                            </td>
-                        </tr>
-                        <tr class="details" style="display:none">
-                            <td colspan="2"><?= $car['notes'] ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </section>
+  <main>
+    <section class="car-list">
+      <h2>Available Cars</h2>
+      <div class="car-grid">
+        <?php foreach ($cars as $car): ?>
+          <div class="car-card">
+            <h3><?php echo htmlspecialchars($car['brand'] . ' ' . $car['model']); ?></h3>
+            <p>Price per day: <strong><?php echo $car['price_per_day']; ?> PLN</strong></p>
+            <form method="post" action="rent_car.php">
+              <input type="hidden" name="car_id" value="<?php echo $car['id']; ?>">
+              <button type="submit">Rent</button>
+            </form>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    </section>
+  </main>
 
-        <section>
-            <h3>Cars You're Renting</h3>
-            <table class="car-table">
-                <thead>
-                    <tr><th>Model</th><th>Action</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($currentRentals as $car): ?>
-                        <tr class="car-row" data-id="<?= $car['id'] ?>">
-                            <td><?= $car['brand'] . " " . $car['model'] ?></td>
-                            <td>
-                                <form method="POST" action="release_car.php">
-                                    <input type="hidden" name="car_id" value="<?= $car['id'] ?>">
-                                    <button type="submit">Release</button>
-                                </form>
-                            </td>
-                        </tr>
-                        <tr class="details" style="display:none">
-                            <td colspan="2"><?= $car['notes'] ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </section>
-
-        <section>
-            <h3>Rental History</h3>
-            <table class="car-table">
-                <thead>
-                    <tr><th>Model</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($pastRentals as $car): ?>
-                        <tr class="car-row" data-id="<?= $car['id'] ?>">
-                            <td><?= $car['brand'] . " " . $car['model'] ?></td>
-                        </tr>
-                        <tr class="details" style="display:none">
-                            <td><?= $car['notes'] ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </section>
-    </div>
+  <footer>
+    <p>&copy; 2026 Specialty Class Rent a Car</p>
+  </footer>
 </body>
 </html>
