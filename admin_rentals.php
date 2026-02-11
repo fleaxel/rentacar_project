@@ -1,46 +1,57 @@
 <?php
 // File: admin_rentals.php
 session_start();
-
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: index.php");
-    exit();
-}
-
 require_once 'includes/db_connect.php';
 
-$rentals = $pdo->query("SELECT rentals.id, users.name AS user_name, cars.model AS car_model, rentals.rent_date, rentals.return_date FROM rentals JOIN users ON rentals.user_id = users.id JOIN cars ON rentals.car_id = cars.id ORDER BY rentals.rent_date DESC")->fetchAll();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+  header("Location: index.php");
+  exit();
+}
+
+$stmt = $pdo->query("SELECT r.id, r.is_active, u.username, c.brand, c.model, r.created_at
+                      FROM rentals r
+                      JOIN users u ON r.user_id = u.id
+                      JOIN cars c ON r.car_id = c.id
+                      ORDER BY r.created_at DESC");
+$rentals = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin - Rental Records</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rental Records - Admin</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="container">
-    <h2>Rental History</h2>
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>User</th>
-            <th>Car</th>
-            <th>Rent Date</th>
-            <th>Return Date</th>
-        </tr>
+  <header>
+    <img src="images/image.png" alt="Logo" class="logo">
+    <h1>Rental Records</h1>
+    <nav>
+      <a href="admin.php">Admin Home</a>
+      <a href="index.php">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h2>All Rental Transactions</h2>
+      <div class="car-grid">
         <?php foreach ($rentals as $rental): ?>
-            <tr>
-                <td><?php echo $rental['id']; ?></td>
-                <td><?php echo htmlspecialchars($rental['user_name']); ?></td>
-                <td><?php echo htmlspecialchars($rental['car_model']); ?></td>
-                <td><?php echo $rental['rent_date']; ?></td>
-                <td><?php echo $rental['return_date'] ?? 'Not returned'; ?></td>
-            </tr>
+          <div class="car-card">
+            <h3><?php echo htmlspecialchars($rental['brand'] . ' ' . $rental['model']); ?></h3>
+            <p>User: <?php echo htmlspecialchars($rental['username']); ?></p>
+            <p>Date: <?php echo $rental['created_at']; ?></p>
+            <p>Status: <?php echo $rental['is_active'] ? 'Active' : 'Returned'; ?></p>
+          </div>
         <?php endforeach; ?>
-    </table>
-    <a href="admin.php">Back to Admin Panel</a>
-</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Specialty Class Rent a Car</p>
+  </footer>
 </body>
 </html>
